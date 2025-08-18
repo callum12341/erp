@@ -6,25 +6,14 @@ interface EmailAccount {
   email: string;
   provider: 'GMAIL' | 'OUTLOOK' | 'IMAP';
   isActive: boolean;
-  lastSync?: string;
 }
 
 interface EmailMessage {
   id: string;
-  messageId: string;
   subject: string;
-  from: {
-    email: string;
-    name?: string;
-  };
-  to: Array<{
-    email: string;
-    name?: string;
-  }>;
-  body: {
-    text?: string;
-    html?: string;
-  };
+  from: { email: string; name?: string; };
+  to: Array<{ email: string; name?: string; }>;
+  body: { text?: string; html?: string; };
   date: string;
   isRead: boolean;
   isImportant: boolean;
@@ -38,12 +27,10 @@ interface EmailState {
   loading: boolean;
   error: string | null;
   
-  // Actions
   fetchAccounts: () => Promise<void>;
   addAccount: (accountData: any) => Promise<void>;
   deleteAccount: (accountId: string) => Promise<void>;
   fetchEmails: (accountId: string) => Promise<void>;
-  sendEmail: (accountId: string, emailData: any) => Promise<void>;
   setSelectedAccount: (accountId: string | null) => void;
 }
 
@@ -98,27 +85,7 @@ export const useEmailStore = create<EmailState>((set, get) => ({
   },
   
   deleteAccount: async (accountId) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await fetch(`/api/emails/accounts/${accountId}`, {
-        method: 'DELETE',
-      });
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        await get().fetchAccounts();
-        if (get().selectedAccount === accountId) {
-          set({ selectedAccount: null, messages: [] });
-        }
-      } else {
-        set({ error: data.error });
-      }
-    } catch (error: any) {
-      set({ error: error.message });
-    } finally {
-      set({ loading: false });
-    }
+    await get().fetchAccounts();
   },
   
   fetchEmails: async (accountId) => {
@@ -134,29 +101,6 @@ export const useEmailStore = create<EmailState>((set, get) => ({
       }
     } catch (error: any) {
       set({ error: error.message });
-    } finally {
-      set({ loading: false });
-    }
-  },
-  
-  sendEmail: async (accountId, emailData) => {
-    set({ loading: true, error: null });
-    try {
-      const response = await fetch(`/api/emails/accounts/${accountId}/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(emailData),
-      });
-      
-      const data = await response.json();
-      
-      if (!data.success) {
-        set({ error: data.error });
-        throw new Error(data.error);
-      }
-    } catch (error: any) {
-      set({ error: error.message });
-      throw error;
     } finally {
       set({ loading: false });
     }
