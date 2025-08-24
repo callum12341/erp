@@ -12,7 +12,11 @@
     "build": "npm run build --workspace=@crm/api && npm run build --workspace=@crm/web",
     "test": "npm run test --workspaces",
     "lint": "eslint . --ext .ts,.tsx",
-    "type-check": "npm run type-check --workspaces"
+    "type-check": "npm run type-check --workspaces",
+    "install:all": "npm install && npm install --workspace=@crm/api && npm install --workspace=@crm/web",
+    "setup:db": "npm run setup:db --workspace=@crm/api",
+    "studio": "npm run studio --workspace=@crm/api",
+    "setup": "npm run install:all && npm run setup:db"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.0.0",

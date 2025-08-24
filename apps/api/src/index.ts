@@ -4,7 +4,8 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { authRoutes } from './routes/auth.js';
-import { emailRoutes } from './routes/emails.js'; 
+import { emailRoutes } from './routes/emails.js';
+import { databaseService } from './services/databaseService.js'; 
 
 dotenv.config();
 
@@ -60,10 +61,36 @@ app.use((error: any, req: any, res: any, next: any) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`Health check: http://localhost:${PORT}/health`);
+// Start server
+const startServer = async () => {
+  try {
+    // Connect to database
+    await databaseService.connect();
+    
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`Health check: http://localhost:${PORT}/health`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('🔄 SIGTERM received, shutting down gracefully...');
+  await databaseService.disconnect();
+  process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+  console.log('🔄 SIGINT received, shutting down gracefully...');
+  await databaseService.disconnect();
+  process.exit(0);
 });
 
 export default app;

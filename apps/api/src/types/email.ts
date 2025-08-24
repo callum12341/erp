@@ -2,7 +2,7 @@ export interface EmailAccount {
   id: string;
   name: string;
   email: string;
-  provider: 'GMAIL' | 'OUTLOOK' | 'IMAP';
+  provider: 'GMAIL' | 'OUTLOOK' | 'YAHOO' | 'ICLOUD' | 'PROTONMAIL' | 'ZOHO' | 'CUSTOM';
   imapConfig: {
     host: string;
     port: number;

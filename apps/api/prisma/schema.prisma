@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  emailAccounts EmailAccount[]
+  
+  @@map("users")
+}
+
+model EmailAccount {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  provider  EmailProvider
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // IMAP Configuration
+  imapHost     String
+  imapPort     Int
+  imapSecure   Boolean
+  imapUser     String
+  imapPassword String
+  
+  // SMTP Configuration
+  smtpHost     String
+  smtpPort     Int
+  smtpSecure   Boolean
+  smtpUser     String
+  smtpPassword String
+  
+  // Relations
+  userId  String
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages EmailMessage[]
+  
+  @@map("email_accounts")
+}
+
+model EmailMessage {
+  id          String   @id @default(cuid())
+  messageId   String   // IMAP UID
+  subject     String
+  fromEmail   String
+  fromName    String?
+  toEmails    String   // JSON array of email addresses
+  toNames     String?  // JSON array of names
+  bodyText    String?
+  bodyHtml    String?
+  date        DateTime
+  isRead      Boolean  @default(false)
+  isImportant Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  
+  // Relations
+  accountId String
+  account   EmailAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@unique([messageId, accountId])
+  @@map("email_messages")
+}
+
+enum EmailProvider {
+  GMAIL
+  OUTLOOK
+  YAHOO
+  ICLOUD
+  PROTONMAIL
+  ZOHO
+  CUSTOM
+}
